@@ -1,0 +1,126 @@
+---
+title: "Shopify challenge"
+author: "Trishla Jain"
+date: "18/01/2022"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+Loading the necessary packages
+
+```{r}
+suppressMessages(library(tidyverse))
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(dlookr))
+suppressMessages(library(corrplot))
+suppressMessages(library(readxl))
+```
+
+```{r}
+csv_file <- read_excel("C:/Users/trish/Desktop/Internship and job applications/2019 Winter Data Science Intern Challenge Data Set.xlsx")
+View(csv_file)
+```
+
+Checking summary statistics for the dataset
+
+```{r}
+summary(csv_file)
+```
+
+
+Looking at order_amount we can see that the mean is quite greater than the median suggesting that it is right skewed and that there could be outliers in our data; also the max value of 704000 is very far away from the 3rd quantile value of 390 and same is the case with total_items and we can also see that the maximum total item is 2000 which is very far from our 3rd quantile value clearly stating that this value is our outlier.
+Rest of the columns are just serial numbers so we wont be checking on them.
+
+Also looking at the mean for order_amount we can see we get the same mean or AOV of 3145 as shown in the question.
+
+Checking for NA and Null's values in our dataset.
+
+```{r}
+sapply(csv_file,function(x) sum(is.na(x)))
+sapply(csv_file,function(x) sum(is.null(x)))
+```
+
+There are no null and NA values in our data which is good.
+
+```{r}
+diagnose_outlier(csv_file)
+```
+
+
+We can see that there are very few outliers in our dataset.
+
+```{r}
+plot_outlier(csv_file %>%
+      select(order_amount,total_items))
+```
+
+
+For order amount we can see we can reduce the right skewness after removing the outlier and looking at the boxplot we can see that it looks almost normal distribution. For Total_items we we can see we get a better box plot after removing the outlier although the graph has barely improved.
+
+Checking correlation 
+
+```{r}
+corrplot(cor(csv_file %>% dplyr::select(order_amount,total_items)), 
+         method = "color", 
+         addCoef.col="grey", 
+         order = "AOE", number.cex=0.75)
+```
+
+We can see that the items are highly correlated which makes sense as when the total items increase the order amount would also increase.
+
+Removing outliers:
+
+```{r}
+# checking how many records we would be removing 
+count(subset(csv_file, csv_file$total_items >= 2000))
+# removing the outliers
+csv_file_noOut <- csv_file[!(csv_file$total_items >= 2000),]
+```
+Validating our changes 
+```{r}
+diagnose_outlier(csv_file_noOut)
+count(csv_file_noOut)
+```
+
+```{r}
+# checking how many records we would be removing 
+count(subset(csv_file_noOut, csv_file_noOut$order_amount >= 715))
+# removing the records
+csv_file_noOut <- csv_file_noOut[!(csv_file_noOut$order_amount >= 715),]
+# checking how many records are in the final dataset
+count(csv_file_noOut)
+```
+
+Validating and checking if removing outliers helped.
+
+```{r}
+plot_outlier(csv_file_noOut %>%
+      select(order_amount,total_items))
+diagnose_outlier(csv_file_noOut %>%
+      select(order_amount,total_items))
+```
+
+We can see after a lot of trial and error(done manually and not included in this document to make it easier for the reader to dilute the information) that order_amount of greater than 715 are outliers and looking at the outlier plot we can see that after removing values of order_amount greater than equal to 700 we get the same plot for plot_outlier with and without outlier.
+
+Hence we can go ahead and check what is the new mean or AOV value that we get.
+
+```{r}
+summary(csv_file_noOut)
+```
+
+We can see that the new AOV is $293.3
+
+
+Q1 A) Think about what could be going wrong with our calculation. Think about a better way to evaluate this data.
+We could see that the AOV value was assigned a wrong value due to outliers such as user_id=607 which have 704000 order_amount and 2000 as the total_items which was purchased on different days repeatably. Since each store sells only one type of shoe and even if we consider a company purchasing the same type of shoes in bulk, having the same purchase again and again in the same amount within 30 days and ordering 2000 shoes seems more like an incorrect entry of data. Hence that data was removed.
+Same way, the data for any order_amount greater than or equal to 715 was removed.
+
+
+Q1 B) What metric would you report for this dataset?
+AOV seems like a correct metric to report.
+
+Q1 C) What is its value?
+We can see that the new AOV is $293.3.
