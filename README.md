@@ -21,4 +21,4 @@ b) What is the last name of the employee with the most orders?<br />
 c) What product was ordered the most by customers in Germany?
 
 ### Solution 
-The solution can be accessed on [this GitHub Page](https://github.com/trishh088/Shopify-Internship-Challenge/blob/main/Shopify%20sql%20challenge.docx)
+The solution can be accessed on [this GitHub Page](https://github.com/trishh088/Shopify-Internship-Challenge/blob/main/Shopify%20sql%20challenge.pdf)
